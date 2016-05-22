@@ -21,15 +21,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedMap;
 
-/**
- * <一句话功能简述>
- * <功能详细描述>测试支付
- * 
- * @author  Administrator
- * @version  [版本号, 2014-8-28]
- * @see  [相关类/方法]
- * @since  [产品/模块版本]
- */
 public class TestPayServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     public static Map<String,String> orderResult; //用来存储订单的交易状态(key:订单号，value:状态(0:未支付，1：已支付))  ---- 这里可以根据需要存储在数据库中
@@ -45,7 +36,22 @@ public class TestPayServlet extends HttpServlet {
         resp.setCharacterEncoding("utf-8");
         
         SortedMap<String,String> map = XmlUtils.getParameterMap(req);
-        
+        //获取充值类型: 1=一年  2=半年
+        String rechargeType =map.remove("rechargeType");
+        if ("2".equals(rechargeType)){//充值一年
+            map.put("body","一年会员");//充值类型
+            map.put("total_fee","2");//TODO 充值费用,后台配置
+        }else {//充值半年
+            map.put("body","半年会员");//充值类型
+            map.put("total_fee","1");//TODO 充值费用,后台配置
+        }
+
+        map.put("service","pay.weixin.wappay");//微信支付
+        map.put("version" , "1.0");
+        map.put("charset" , "UTF-8");
+        map.put("sign_type" , "MD5");
+        map.put("out_trade_no" , "" + System.currentTimeMillis());//商户订单号
+
         map.put("mch_id", SwiftpassConfig.mch_id);
         //重复提交的时候直接查询本地的状态
        /* if(orderResult != null && orderResult.containsKey(map.get("out_trade_no"))){
